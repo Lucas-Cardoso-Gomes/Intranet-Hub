@@ -1,0 +1,18 @@
+@model IntranetHub.Models.Pop
+@{ ViewData["Title"] = "Criar Novo POP"; }
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" enctype="multipart/form-data">
+            <div class="mb-3"><label class="form-label fw-bold">Assunto</label><input asp-for="Subject" class="form-control" required /></div>
+            <div class="row mb-3">
+                <div class="col-md-6"><label class="form-label fw-bold">Filial</label><select asp-for="BranchId" class="form-select" asp-items="ViewBag.Branches"><option value="">Geral</option></select></div>
+                <div class="col-md-6"><label class="form-label fw-bold">Data</label><input asp-for="Date" type="date" class="form-control" required /></div>
+            </div>
+            <div class="mb-3"><label class="form-label fw-bold">Texto do Procedimento</label><textarea asp-for="Body" class="form-control" rows="5" required></textarea></div>
+            <div class="mb-4"><label class="form-label fw-bold">Anexar Arquivo</label><input type="file" name="uploadFile" class="form-control" /></div>
+            <button type="submit" class="btn btn-primary px-4">Salvar POP</button>
+        </form>
+    </div>
+</div>

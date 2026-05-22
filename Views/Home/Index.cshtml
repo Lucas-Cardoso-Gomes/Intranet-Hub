@@ -1,0 +1,64 @@
+﻿@model IntranetHub.Models.DashboardViewModel
+@{ ViewData["Title"] = "Dashboard"; }
+
+<div class="text-center mb-4">
+    <h1 class="display-4">Bem-vindo à Intranet</h1>
+    <p>Hub de Comunicação e Logística</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3 shadow-sm">
+            <div class="card-header">Operações Hoje</div>
+            <div class="card-body"><h5 class="card-title display-6">@Model.TotalOperationsToday</h5></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3 shadow-sm">
+            <div class="card-header">Filiais Ativas</div>
+            <div class="card-body"><h5 class="card-title display-6">@Model.ActiveBranches</h5></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3 shadow-sm">
+            <div class="card-header">Cotação PTAX</div>
+            <div class="card-body">
+                <p class="card-text mb-0"><strong>USD:</strong> @(Model.UsdRate?.ToString("C4") ?? "N/A")</p>
+                <p class="card-text"><strong>EUR:</strong> @(Model.EurRate?.ToString("C4") ?? "N/A")</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light mb-3 shadow-sm">
+            <div class="card-header">Clima (SPO)</div>
+            <div class="card-body text-center">
+                <h5 class="card-title mb-0">@(Model.CurrentTemp?.ToString("0.0") ?? "--") °C</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-secondary text-white">Módulos do Sistema</div>
+            <div class="list-group list-group-flush">
+                <a asp-controller="Mural" asp-action="Index" class="list-group-item list-group-item-action"><i class="bi bi-megaphone"></i> Mural RH (Avisos & Aniversários)</a>
+                <a asp-controller="Pops" asp-action="Index" class="list-group-item list-group-item-action"><i class="bi bi-journal-text"></i> Procedimentos (POPs)</a>
+                <a asp-controller="CincoS" asp-action="Index" class="list-group-item list-group-item-action"><i class="bi bi-star"></i> Ações 5S</a>
+                <a asp-controller="Ouvidoria" asp-action="Index" class="list-group-item list-group-item-action"><i class="bi bi-envelope-paper"></i> Ouvidoria / Canal RH</a>
+                <a asp-controller="Contacts" asp-action="Index" class="list-group-item list-group-item-action"><i class="bi bi-telephone"></i> Ramais e Contatos</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8 mb-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white">Links Rápidos</div>
+            <div class="card-body text-center">
+                <a href="https://cav.receita.fazenda.gov.br/" target="_blank" class="btn btn-outline-secondary py-3 me-2"><i class="bi bi-globe"></i><br />Portal e-CAC</a>
+                <a href="#" class="btn btn-outline-secondary py-3 me-2"><i class="bi bi-laptop"></i><br />ERP Corporativo</a>
+                <a href="#" class="btn btn-outline-secondary py-3"><i class="bi bi-envelope"></i><br />Webmail</a>
+            </div>
+        </div>
+    </div>
+</div>

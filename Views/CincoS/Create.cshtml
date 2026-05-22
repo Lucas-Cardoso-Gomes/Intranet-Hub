@@ -1,0 +1,24 @@
+@model IntranetHub.Models.CincoSAudit
+@{ ViewData["Title"] = "Lançar Auditoria 5S"; }
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" enctype="multipart/form-data">
+            <div class="row mb-3">
+                <div class="col-md-6"><label class="form-label fw-bold">Filial</label><select asp-for="BranchId" class="form-select" asp-items="ViewBag.Branches" required></select></div>
+                <div class="col-md-6"><label class="form-label fw-bold">Data</label><input asp-for="AuditDate" type="date" class="form-control" required /></div>
+            </div>
+            <h5 class="text-primary mt-4 border-bottom pb-2">Pontuação (0 a 10)</h5>
+            <div class="row mb-4">
+                <div class="col"><label>Utilização</label><input asp-for="UtilizacaoScore" type="number" min="0" max="10" class="form-control" required /></div>
+                <div class="col"><label>Organização</label><input asp-for="OrganizacaoScore" type="number" min="0" max="10" class="form-control" required /></div>
+                <div class="col"><label>Limpeza</label><input asp-for="LimpezaScore" type="number" min="0" max="10" class="form-control" required /></div>
+                <div class="col"><label>Padronização</label><input asp-for="PadronizacaoScore" type="number" min="0" max="10" class="form-control" required /></div>
+                <div class="col"><label>Disciplina</label><input asp-for="DisciplinaScore" type="number" min="0" max="10" class="form-control" required /></div>
+            </div>
+            <div class="mb-3"><label class="form-label fw-bold">Fotos de Evidência</label><input type="file" name="images" class="form-control" accept="image/*" multiple /></div>
+            <button type="submit" class="btn btn-primary px-5">Salvar Auditoria</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+@model IntranetHub.Models.LoginViewModel
+@{ ViewData["Title"] = "Login"; }
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="Account" asp-action="Login" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="mb-3">
+                            <label asp-for="Username" class="form-label">Usuário</label>
+                            <input asp-for="Username" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Senha</label>
+                            <input asp-for="Password" type="password" class="form-control" required />
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input asp-for="RememberMe" type="checkbox" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label">Lembrar-me</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Entrar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+Views/Account/AccessDenied.cshtml
+
+@{ ViewData["Title"] = "Acesso Negado"; }
+<div class="container mt-5 text-center">
+    <h1 class="text-danger"><i class="bi bi-shield-lock"></i> Acesso Negado</h1>
+    <p class="lead">Você não tem permissão para acessar esta página.</p>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Voltar para o Início</a>
+</div>

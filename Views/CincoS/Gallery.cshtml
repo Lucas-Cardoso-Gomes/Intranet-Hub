@@ -1,0 +1,12 @@
+@model IEnumerable<IntranetHub.Models.CincoSImage>
+@{ ViewData["Title"] = "Galeria 5S"; }
+<h2 class="mb-4"><i class="bi bi-images"></i> @ViewData["Title"]</h2>
+<div class="row">
+    @foreach (var img in Model) {
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <img src="@img.ImagePath" class="card-img-top" style="height: 250px; object-fit: cover;">
+                <div class="card-footer bg-white text-muted small"><i class="bi bi-building"></i> @img.CincoSAudit.Branch.Name | @img.CincoSAudit.AuditDate.ToString("dd/MM")</div>
+            </div>
+        </div>
+    }

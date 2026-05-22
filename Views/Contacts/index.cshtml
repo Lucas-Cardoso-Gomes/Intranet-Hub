@@ -1,0 +1,25 @@
+@model IEnumerable<IntranetHub.Models.Contact>
+@{ ViewData["Title"] = "Ramais e Contatos"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-telephone"></i> @ViewData["Title"]</h2>
+    @if (User.Identity.IsAuthenticated) { <a asp-action="Manage" class="btn btn-outline-primary">Gerenciar</a> }
+</div>
+
+<form asp-action="Index" method="get" class="mb-4"><input type="text" name="searchString" class="form-control" placeholder="Buscar nome ou departamento..." /></form>
+
+<div class="card shadow-sm">
+    <table class="table table-striped mb-0">
+        <thead class="table-dark"><tr><th>Nome</th><th>Setor / Filial</th><th>Ramal</th><th>Email</th></tr></thead>
+        <tbody>
+            @foreach (var c in Model) {
+                <tr>
+                    <td class="fw-bold">@c.Name</td>
+                    <td>@c.Department <br><small class="text-muted">@(c.Branch?.Name ?? "Geral")</small></td>
+                    <td><span class="badge bg-success">@(c.ExtensionLine ?? "-")</span></td>
+                    <td>@c.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
