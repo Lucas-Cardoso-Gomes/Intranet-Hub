@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using IntranetHub.Models;
 
 namespace IntranetHub.Services
 {
@@ -13,24 +15,47 @@ namespace IntranetHub.Services
             _httpClient = httpClient;
         }
 
-        public async Task<(decimal? temp, string? description)> GetWeatherAsync(string city)
+        public async Task<List<BranchWeather>> GetWeatherForBranchesAsync(List<Branch> branches)
         {
-            try
+            var branchWeathers = new List<BranchWeather>();
+            
+            var branchCoordinates = new Dictionary<string, (double lat, double lon)>
             {
-                double lat = -23.5505, lon = -46.6333; // SP
+                { "Uruguaiana", (-29.75472, -57.08833) },
+                { "São Borja", (-28.66056, -56.00444) },
+                { "Itajaí", (-26.90778, -48.66194) },
+                { "Foz do Iguaçu", (-25.54778, -54.58806) },
+                { "São Paulo", (-23.5505, -46.6333) }
+            };
 
-                var url = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true";
-                var response = await _httpClient.GetStringAsync(url);
-                using var doc = JsonDocument.Parse(response);
+            foreach (var branch in branches)
+            {
+                decimal? temp = null;
                 
-                if (doc.RootElement.TryGetProperty("current_weather", out var current))
+                if (branchCoordinates.TryGetValue(branch.Name, out var coords))
                 {
-                    var temp = current.GetProperty("temperature").GetDecimal();
-                    return (temp, "Clima Atualizado");
+                    try
+                    {
+                        var url = $"https://api.open-meteo.com/v1/forecast?latitude={coords.lat}&longitude={coords.lon}&current_weather=true";
+                        var response = await _httpClient.GetStringAsync(url);
+                        using var doc = JsonDocument.Parse(response);
+                        
+                        if (doc.RootElement.TryGetProperty("current_weather", out var current))
+                        {
+                            temp = current.GetProperty("temperature").GetDecimal();
+                        }
+                    }
+                    catch { /* swallow error to continue with other branches */ }
                 }
-                return (null, null);
+
+                branchWeathers.Add(new BranchWeather 
+                { 
+                    BranchName = branch.Name, 
+                    Temp = temp 
+                });
             }
-            catch { return (null, null); }
+
+            return branchWeathers;
         }
     }
 }

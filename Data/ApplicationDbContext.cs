@@ -16,6 +16,7 @@ namespace IntranetHub.Data
         public DbSet<CincoSAudit> CincoSAudits { get; set; }
         public DbSet<CincoSImage> CincoSImages { get; set; }
         public DbSet<Contact> Contacts { get; set; }
+        public DbSet<DolarRate> DolarRates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

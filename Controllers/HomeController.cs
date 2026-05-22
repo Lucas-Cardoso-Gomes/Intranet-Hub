@@ -22,22 +22,31 @@ namespace IntranetHub.Controllers
         public async Task<IActionResult> Index()
         {
             var rates = await _bcbApiService.GetLatestRatesAsync();
-            var weather = await _weatherService.GetWeatherAsync("São Paulo");
+            
+            var branches = await _context.Branches.ToListAsync();
+            var branchWeathers = await _weatherService.GetWeatherForBranchesAsync(branches);
 
-            var activeBranchesCount = await _context.Branches.CountAsync();
+            var activeBranchesCount = branches.Count;
             var ongoingAuditsCount = await _context.CincoSAudits.CountAsync();
 
             var viewModel = new DashboardViewModel
             {
-                UsdRate = rates.usd,
-                EurRate = rates.eur,
-                CurrentTemp = weather.temp,
-                WeatherDescription = weather.description,
+                UsdCompra = rates.usdCompra,
+                UsdVenda = rates.usdVenda,
+                DolarUpdatedAt = rates.updatedAt,
+                BranchWeathers = branchWeathers,
                 TotalOperationsToday = 142,
                 ActiveBranches = activeBranchesCount,
                 OngoingAudits = ongoingAuditsCount
             };
             return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForceSyncDolar()
+        {
+            await _bcbApiService.SyncRatesAsync();
+            return RedirectToAction("Index");
         }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 public IActionResult Error()

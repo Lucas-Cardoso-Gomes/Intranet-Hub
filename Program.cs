@@ -11,6 +11,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHttpClient<BcbSyncService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<BcbSyncService>());
+
 builder.Services.AddHttpClient<BcbApiService>();
 builder.Services.AddHttpClient<WeatherService>();
 builder.Services.AddTransient<EmailService>();

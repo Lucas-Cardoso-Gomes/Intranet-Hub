@@ -1,44 +1,95 @@
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
 using System;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using IntranetHub.Data;
+using IntranetHub.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace IntranetHub.Services
 {
     public class BcbApiService
     {
+        private readonly ApplicationDbContext _context;
         private readonly HttpClient _httpClient;
 
-        public BcbApiService(HttpClient httpClient)
+        public BcbApiService(ApplicationDbContext context, HttpClient httpClient)
         {
+            _context = context;
             _httpClient = httpClient;
         }
 
-        public async Task<(decimal? usd, decimal? eur)> GetLatestRatesAsync()
+        public async Task<(decimal? usdCompra, decimal? usdVenda, DateTime? updatedAt)> GetLatestRatesAsync()
         {
             try
             {
-                var today = DateTime.Now.ToString("MM-dd-yyyy");
-                var sevenDaysAgo = DateTime.Now.AddDays(-7).ToString("MM-dd-yyyy");
-                
-                var usdUrl = $"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='USD'&@dataInicial='{sevenDaysAgo}'&@dataFinalCotacao='{today}'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json&$select=cotacaoCompra";
-                var eurUrl = $"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda='EUR'&@dataInicial='{sevenDaysAgo}'&@dataFinalCotacao='{today}'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json&$select=cotacaoCompra";
+                var latestRate = await _context.DolarRates
+                    .OrderByDescending(r => r.Date)
+                    .FirstOrDefaultAsync();
 
-                decimal? usd = null, eur = null;
+                if (latestRate != null)
+                {
+                    return (latestRate.ValorCompra, latestRate.ValorVenda, latestRate.UpdatedAt);
+                }
 
-                var usdResponse = await _httpClient.GetStringAsync(usdUrl);
-                using var usdDoc = JsonDocument.Parse(usdResponse);
-                if (usdDoc.RootElement.TryGetProperty("value", out var usdValues) && usdValues.GetArrayLength() > 0)
-                    usd = usdValues[0].GetProperty("cotacaoCompra").GetDecimal();
-
-                var eurResponse = await _httpClient.GetStringAsync(eurUrl);
-                using var eurDoc = JsonDocument.Parse(eurResponse);
-                if (eurDoc.RootElement.TryGetProperty("value", out var eurValues) && eurValues.GetArrayLength() > 0)
-                    eur = eurValues[0].GetProperty("cotacaoCompra").GetDecimal();
-
-                return (usd, eur);
+                return (null, null, null);
             }
-            catch { return (null, null); }
+            catch { return (null, null, null); }
+        }
+
+        public async Task SyncRatesAsync(CancellationToken stoppingToken = default)
+        {
+            try
+            {
+                var today = DateTime.Now.ToString("dd/MM/yyyy");
+                var start = DateTime.Now.AddDays(-7).ToString("dd/MM/yyyy");
+                var url = $"https://ptax.bcb.gov.br/ptax_internet/consultaBoletim.do?method=gerarCSVFechamentoMoedaNoPeriodo&ChkMoeda=61&DATAINI={start}&DATAFIM={today}";
+
+                var response = await _httpClient.GetByteArrayAsync(url, stoppingToken);
+                var content = System.Text.Encoding.GetEncoding("ISO-8859-1").GetString(response);
+                
+                using var reader = new StringReader(content);
+                string? line;
+                while ((line = await reader.ReadLineAsync(stoppingToken)) != null)
+                {
+                    var parts = line.Split(';');
+                    if (parts.Length >= 6 && parts[3] == "USD")
+                    {
+                        if (decimal.TryParse(parts[4], NumberStyles.Any, CultureInfo.GetCultureInfo("pt-BR"), out var valorCompra) &&
+                            decimal.TryParse(parts[5], NumberStyles.Any, CultureInfo.GetCultureInfo("pt-BR"), out var valorVenda))
+                        {
+                            var datePart = parts[0]; // e.g. 23042024
+                            var rateDate = DateTime.ParseExact(datePart, "ddMMyyyy", CultureInfo.InvariantCulture);
+                            
+                            var existingRate = await _context.DolarRates.FirstOrDefaultAsync(r => r.Date == rateDate, stoppingToken);
+                            if (existingRate == null)
+                            {
+                                _context.DolarRates.Add(new DolarRate
+                                {
+                                    Date = rateDate,
+                                    ValorCompra = valorCompra,
+                                    ValorVenda = valorVenda,
+                                    UpdatedAt = DateTime.Now
+                                });
+                            }
+                            else
+                            {
+                                existingRate.ValorCompra = valorCompra;
+                                existingRate.ValorVenda = valorVenda;
+                                existingRate.UpdatedAt = DateTime.Now;
+                            }
+                            await _context.SaveChangesAsync(stoppingToken);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error syncing rates: {ex.Message}");
+            }
         }
     }
 }
