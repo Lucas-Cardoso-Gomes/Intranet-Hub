@@ -21,7 +21,7 @@ namespace IntranetHub.Controllers
         public async Task<IActionResult> Index()
         {
             ViewBag.Ranking = await _context.Branches
-                .Select(b => new { BranchName = b.Name, TotalScore = _context.CincoSAudits.Where(a => a.BranchId == b.Id).ToList().Sum(a => a.TotalScore) })
+                .Select(b => new { BranchName = b.Name, TotalScore = _context.CincoSAudits.Where(a => a.BranchId == b.Id).Sum(a => a.UtilizacaoScore + a.OrganizacaoScore + a.LimpezaScore + a.PadronizacaoScore + a.DisciplinaScore) })
                 .OrderByDescending(r => r.TotalScore).ToListAsync();
 
             return View(await _context.CincoSAudits.Include(a => a.Branch).OrderByDescending(a => a.AuditDate).Take(10).ToListAsync());
@@ -58,8 +58,8 @@ namespace IntranetHub.Controllers
         public async Task<IActionResult> Gallery(int? branchId)
         {
             ViewBag.Branches = new SelectList(await _context.Branches.ToListAsync(), "Id", "Name");
-            var query = _context.CincoSImages.Include(i => i.CincoSAudit).ThenInclude(a => a.Branch).AsQueryable();
-            if (branchId.HasValue) query = query.Where(i => i.CincoSAudit.BranchId == branchId.Value);
+            var query = _context.CincoSImages.Include(i => i.CincoSAudit).ThenInclude(a => a!.Branch).AsQueryable();
+            if (branchId.HasValue) query = query.Where(i => i.CincoSAudit!.BranchId == branchId.Value);
             return View(await query.ToListAsync());
         }
     }

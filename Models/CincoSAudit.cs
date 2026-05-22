@@ -6,7 +6,7 @@ namespace IntranetHub.Models
     {
         public int Id { get; set; }
         public int BranchId { get; set; }
-        public Branch Branch { get; set; }
+        public Branch? Branch { get; set; }
         public DateTime AuditDate { get; set; } = DateTime.Now;
         public int UtilizacaoScore { get; set; }
         public int OrganizacaoScore { get; set; }

@@ -1,6 +1,8 @@
+using IntranetHub.Data;
 using IntranetHub.Models;
 using IntranetHub.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace IntranetHub.Controllers
 {
@@ -8,17 +10,22 @@ namespace IntranetHub.Controllers
     {
         private readonly BcbApiService _bcbApiService;
         private readonly WeatherService _weatherService;
+        private readonly ApplicationDbContext _context;
 
-        public HomeController(BcbApiService bcbApiService, WeatherService weatherService)
+        public HomeController(BcbApiService bcbApiService, WeatherService weatherService, ApplicationDbContext context)
         {
             _bcbApiService = bcbApiService;
             _weatherService = weatherService;
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
         {
             var rates = await _bcbApiService.GetLatestRatesAsync();
             var weather = await _weatherService.GetWeatherAsync("São Paulo");
+
+            var activeBranchesCount = await _context.Branches.CountAsync();
+            var ongoingAuditsCount = await _context.CincoSAudits.CountAsync();
 
             var viewModel = new DashboardViewModel
             {
@@ -27,8 +34,8 @@ namespace IntranetHub.Controllers
                 CurrentTemp = weather.temp,
                 WeatherDescription = weather.description,
                 TotalOperationsToday = 142,
-                ActiveBranches = 5,
-                OngoingAudits = 2
+                ActiveBranches = activeBranchesCount,
+                OngoingAudits = ongoingAuditsCount
             };
             return View(viewModel);
         }
